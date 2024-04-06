@@ -1,9 +1,10 @@
 import React from "react";
-import TradingViewWidget from "./TradingViewWidget";
+
 import '../styles/main.css'
 import { useState, useEffect, useRef } from "react";
 import axios from 'axios';
 import Slider from 'react-slick';
+import '../scipts/animate'
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import TradingViewWidgetWrapper from "./TradingViewWrapper";
@@ -15,10 +16,9 @@ const Home = () => {
     const [showSearchResults, setShowSearchResults] = useState(false);
     const [searchText, setSearchText] = useState('');
     const [mainCoinData, setMainCoinData] = useState();
-    const [seed, setSeed] = useState(1);
-    const reset = () => {
-        setSeed(Math.random());
-    }
+    const [mainCoinName, setMainCoinName] = useState('bitcoin');
+
+
     const settings = {
         dots: false,
         infinite: true,
@@ -67,13 +67,15 @@ const Home = () => {
 
         }
         fetchTrending();
-        fetchMainCoinData('bitcoin');
+        fetchMainCoinData(mainCoinName);
         console.log(mainCoin);
     }, [mainCoin])
+
     const fetchSearchCoins = async (value) => {
         try {
             const res = await axios.get(`https://api.coingecko.com/api/v3/search?query=${value}`);
             setSearchResults(res.data.coins);
+            setSearchText(value)
             setShowSearchResults(res.data.coins && res.data.coins.length > 0);
             console.log(res.data.coins);
         } catch (e) {
@@ -91,14 +93,16 @@ const Home = () => {
         setMainCoin(value);
         setShowSearchResults(false);
         setSearchText('');
-        fetchMainCoinData(id)
-        reset();
+        setMainCoinName(id);
+        fetchMainCoinData(mainCoinName);
+
     }
     const fetchMainCoinData = async (id) => {
         try {
             const res = await axios.get(`https://api.coingecko.com/api/v3/coins/${id}`);
             console.log(res.data);
             setMainCoinData(res.data);
+
         } catch (e) {
             console.log(e)
         };
@@ -110,7 +114,7 @@ const Home = () => {
 
             <div className="search-container container">
                 <input className="search-bar" placeholder="Search for coin" value={searchText} type="search" onChange={(e) => handleSearchBarChange(e.target.value)} />
-                <div className={`search-results ${showSearchResults ? '':'search-none'}`}>
+                <div className={`search-results &#8377;{showSearchResults ? '':'search-none'}`}>
                     {showSearchResults && searchResults !== null && Array.isArray(searchResults) && searchResults.slice(0, 20).map((coin, index) => (
                         <div className="search-items trending-list-small-flex align-left" onClick={() => handleCoinChange(coin.symbol, coin.id)}>
                             <img src={coin.thumb} alt="" className="sm-logo-coin" />
@@ -128,8 +132,8 @@ const Home = () => {
                 <div className="col-1">
 
                     <div className="chart-cont">
-                        {/* <TradingViewWidget ref={tradingViewRef} coinName={mainCoin} /> */}
-                        <TradingViewWidgetWrapper key={seed} coinName={mainCoin}></TradingViewWidgetWrapper>
+
+                        <TradingViewWidgetWrapper key={mainCoin} coinName={mainCoin}></TradingViewWidgetWrapper>
                     </div>
 
 
@@ -149,28 +153,28 @@ const Home = () => {
                             <h1 className="title color-black align-left-text">Performance</h1>
 
                             <div className="performance-list">
-                                <div className="performance-col-left text-sm color-black">
+                                <div className="reveal-from-left performance-col-left text-sm color-black">
                                     <p className="gray-text">Today's Low</p>
-                                    <p className="bold-num">46,930.22</p>
+                                    <p className="bold-num">&#8377;{mainCoinData?.market_data.low_24h.inr}</p>
                                 </div>
-                                <img className="performance-col-middle" src="https://res.cloudinary.com/dn07sxmaf/image/upload/v1709643278/koinx/Group_27607_wyhasp.png" alt="" />
+                                <img className=" reveal-from-right performance-col-middle" src="https://res.cloudinary.com/dn07sxmaf/image/upload/v1709643278/koinx/Group_27607_wyhasp.png" alt="" />
                                 <div className="performance-col-right text-sm color-black">
                                     <p className="gray-text"> Today's High</p>
-                                    <p className="bold-num">49,343.83</p>
+                                    <p className="bold-num">&#8377;{mainCoinData?.market_data.high_24h.inr}</p>
                                 </div>
 
 
                             </div>
 
-                            <div className="performance-list">
+                            <div className=" reveal-from-left performance-list">
                                 <div className="performance-col-left text-sm color-black">
-                                    <p className="gray-text"> 52W Low</p>
-                                    <p className="bold-num">16,930.22</p>
+                                    <p className="gray-text"> All time Low</p>
+                                    <p className="bold-num">&#8377;{mainCoinData?.market_data.atl.inr}</p>
                                 </div>
-                                <img className="performance-col-middle" src="https://res.cloudinary.com/dn07sxmaf/image/upload/v1709644639/koinx/div.pbar29RangesliderWrapper_margin_o3ktrm.png" alt="" />
+                                <img className=" reveal-from-right performance-col-middle" src="https://res.cloudinary.com/dn07sxmaf/image/upload/v1709644639/koinx/div.pbar29RangesliderWrapper_margin_o3ktrm.png" alt="" />
                                 <div className="performance-col-right text-sm color-black">
-                                    <p className="gray-text">52W High</p>
-                                    <p className="bold-num">49,743.83</p>
+                                    <p className="gray-text">All Time High</p>
+                                    <p className="bold-num">&#8377;{mainCoinData?.market_data.ath.inr}</p>
                                 </div>
                             </div>
 
@@ -183,64 +187,72 @@ const Home = () => {
                             <div className="mega-fundamental-cont display-flex-betwn">
                                 <div className="fundamental-columns">
 
-                                    <div className="display-flex-betwn">
-                                        <p className="text-sm gray-text">Bitcoin</p>
-                                        <p className="text-sm bold-num color-black">$16,815</p>
+                                    <div className="reveal-from-left display-flex-betwn">
+                                        <p key={mainCoinData} className="text-sm gray-text">{mainCoinData?.name}</p>
+                                        <p className="text-sm bold-num color-black">&#8377;{mainCoinData?.market_data.current_price.inr}</p>
                                     </div>
                                     <div className="horizontal-line"></div>
 
-                                    <div className="display-flex-betwn">
+                                    <div className="reveal-from-left display-flex-betwn">
+                                        <p key={mainCoinData} className="text-sm gray-text">Price Change 24H</p>
+                                        <p className="text-sm bold-num color-black">&#8377;{mainCoinData?.market_data.price_change_24h_in_currency.inr}</p>
+                                    </div>
+                                    <div className="horizontal-line"></div>
+
+
+                                    <div className=" reveal-from-left display-flex-betwn">
                                         <p className="text-sm gray-text">24h high/24h low</p>
-                                        <p className="text-sm bold-num color-black">$16,382.07 / $16,874.12</p>
+                                        <p className="text-sm bold-num color-black">&#8377;{mainCoinData?.market_data.high_24h.inr} / &#8377;{mainCoinData?.market_data.low_24h.inr}</p>
                                     </div>
                                     <div className="horizontal-line"></div>
 
-                                    <div className="display-flex-betwn">
-                                        <p className="text-sm gray-text">7d Low / 7d High</p>
-                                        <p className="text-sm bold-num color-black">$16,382.07 / $16,874.12</p>
-                                    </div>
+
                                     <div className="horizontal-line"></div>
-                                    <div className="display-flex-betwn">
-                                        <p className="text-sm gray-text">Trading Volume</p>
-                                        <p className="text-sm bold-num color-black">$23,249,202,782</p>
+                                    <div className="reveal-from-left display-flex-betwn">
+                                        <p className="text-sm gray-text">Total Volume</p>
+                                        <p className="text-sm bold-num color-black">&#8377;{mainCoinData?.market_data.total_volume.inr}/</p>
                                     </div>
                                     <div className="horizontal-line"></div>
 
-                                    <div className="display-flex-betwn">
+                                    <div className="reveal-from-left display-flex-betwn">
                                         <p className="text-sm gray-text">Market Cap Rank</p>
-                                        <p className="text-sm bold-num color-black">1</p>
+                                        <p className="text-sm bold-num color-black">{mainCoinData?.market_data.market_cap_rank}</p>
                                     </div>
                                     <div className="horizontal-line"></div>
                                 </div>
 
                                 <div className="fundamental-columns">
-                                    <div className="display-flex-betwn">
+                                    <div className="reveal-from-right display-flex-betwn">
                                         <p className="text-sm gray-text">Market Cap</p>
-                                        <p className="text-sm bold-num color-black">$323,507,290,047</p>
+                                        <p className="text-sm bold-num color-black">&#8377;{mainCoinData?.market_data.market_cap.inr}</p>
                                     </div>
                                     <div className="horizontal-line"></div>
 
-                                    <div className="display-flex-betwn">
-                                        <p className="text-sm gray-text">Market Cap Dominance</p>
-                                        <p className="text-sm bold-num color-black">38.343%</p>
+
+                                    <div className="reveal-from-right display-flex-betwn">
+                                        <p className="text-sm gray-text">Price Change 24H %</p>
+                                        <p className="text-sm bold-num color-black">%{mainCoinData?.market_data.price_change_percentage_24h}</p>
                                     </div>
                                     <div className="horizontal-line"></div>
 
-                                    <div className="display-flex-betwn">
-                                        <p className="text-sm gray-text">Volume / Market Cap</p>
-                                        <p className="text-sm bold-num color-black">0.0718</p>
+
+
+
+                                    <div className="reveal-from-right display-flex-betwn">
+                                        <p className="text-sm gray-text">Max Supply</p>
+                                        <p className="text-sm bold-num color-black">{mainCoinData?.market_data.max_supply}</p>
                                     </div>
                                     <div className="horizontal-line"></div>
 
-                                    <div className="display-flex-betwn">
+                                    <div className="reveal-from-right display-flex-betwn">
                                         <p className="text-sm gray-text">All-Time High</p>
-                                        <p className="text-sm bold-num color-black">$69,044.77 -75.6%</p>
+                                        <p className="text-sm bold-num color-black">&#8377;{mainCoinData?.market_data.ath.inr}</p>
                                     </div>
                                     <div className="horizontal-line"></div>
 
-                                    <div className="display-flex-betwn">
+                                    <div className="reveal-from-right display-flex-betwn">
                                         <p className="text-sm gray-text">All-Time Low</p>
-                                        <p className="text-sm bold-num color-black">$67.81 24729.1%</p>
+                                        <p className="text-sm bold-num color-black">&#8377;{mainCoinData?.market_data.atl.inr}</p>
                                     </div>
                                     <div className="horizontal-line"></div>
                                 </div>
@@ -254,7 +266,7 @@ const Home = () => {
                             Key Events <img src="https://res.cloudinary.com/dn07sxmaf/image/upload/v1709646666/koinx/SVG_margin_efccv1.png" alt="" />
                         </div>
 
-                        <div className="cards-list">
+                        <div className="cards-list ">
                             <Slider {...settings}>
 
                                 <div className="card">
@@ -306,30 +318,31 @@ const Home = () => {
 
                             <div className="mega-fundamental-cont display-flex-betwn">
                                 <div className="fundamental-columns">
-
-                                    <div className="display-flex-betwn">
-                                        <p className="text-sm gray-text">Bitcoin</p>
-                                        <p className="text-sm bold-num color-black">$16,815</p>
+                                <div className="reveal-from-right display-flex-betwn">
+                                        <p className="text-sm gray-text">All-Time High</p>
+                                        <p className="text-sm bold-num color-black">&#8377;{mainCoinData?.market_data.ath.inr}</p>
                                     </div>
                                     <div className="horizontal-line"></div>
 
-                                    <div className="display-flex-betwn">
-                                        <p className="text-sm gray-text">Bitcoin</p>
-                                        <p className="text-sm bold-num color-black">$16,815</p>
+                                    <div className="reveal-from-right display-flex-betwn">
+                                        <p className="text-sm gray-text">All-Time Low</p>
+                                        <p className="text-sm bold-num color-black">&#8377;{mainCoinData?.market_data.atl.inr}</p>
                                     </div>
                                     <div className="horizontal-line"></div>
+                                   
                                 </div>
 
                                 <div className="fundamental-columns">
-                                    <div className="display-flex-betwn">
-                                        <p className="text-sm gray-text">Bitcoin</p>
-                                        <p className="text-sm bold-num color-black">$16,815</p>
+                                <div className="horizontal-line"></div>
+                                    <div className="reveal-from-right display-flex-betwn">
+                                        <p className="text-sm gray-text">Total Volume</p>
+                                        <p className="text-sm bold-num color-black">&#8377;{mainCoinData?.market_data.total_volume.inr}/</p>
                                     </div>
                                     <div className="horizontal-line"></div>
 
-                                    <div className="display-flex-betwn">
-                                        <p className="text-sm gray-text">Bitcoin</p>
-                                        <p className="text-sm bold-num color-black">$16,815</p>
+                                    <div className="reveal-from-right display-flex-betwn">
+                                        <p className="text-sm gray-text">Market Cap Rank</p>
+                                        <p className="text-sm bold-num color-black">{mainCoinData?.market_data.market_cap_rank}</p>
                                     </div>
                                     <div className="horizontal-line"></div>
                                 </div>
@@ -339,13 +352,14 @@ const Home = () => {
                     </div>
 
 
-                    <div className="about-bitcoin-container container">
-                        <h1 className="title color-black align-left-text">About Bitcoin</h1>
-                        <div className="title color-black align-left-text title-med color-black">
-                            What is Bitcoin ?
+                    <div className="reveal-from-right about-bitcoin-container container">
+                        <h1 className="title color-black align-left-text">About {mainCoinData?.name}</h1>
+                        <div className="reveal-from-right title color-black align-left-text title-med color-black">
+                            What is {mainCoinData?.name} ?
                         </div>
-                        <p className="text-sm gray-text align-left-text">
-                            Bitcoin’s price today is US$16,951.82, with a 24-hour trading volume of $19.14 B. BTC is +0.36% in the last 24 hours. It is currently -7.70% from its 7-day all-time high of $18,366.66, and 3.40% from its 7-day all-time low of $16,394.75. BTC has a circulating supply of 19.24 M BTC and a max supply of 21 M BTC.
+                        <p className="reveal-from-right text-sm gray-text align-left-text">
+                           Lorem ipsum dolor sit, amet consectetur adipisicing elit. Optio et expedita, sequi qui impedit sint natus quia corporis libero omnis? Temporibus autem labore itaque exercitationem, maiores tempora? Mollitia quam esse voluptatum culpa.
+                            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos ad tenetur animi nam delectus beatae laudantium reiciendis, debitis, asperiores doloribus fugiat iste? Cumque repudiandae facilis inventore dignissimos nostrum ullam, asperiores exercitationem illum.
                         </p>
                         <div className="horizontal-line"></div>
 
@@ -365,10 +379,10 @@ const Home = () => {
                         <div className="horizonatal-line"></div>
 
                         <div className="already-holding-bitcoin-container mg-up-1rem">
-                            <h1 className="title color-black align-left-text">Already Holding Bitcoin?</h1>
+                            <h1 className="title color-black align-left-text">Already Holding {mainCoinData?.name}?</h1>
 
                             <div className="calculate-cards-list">
-                                <div className="calculate-card blue-back-gradient">
+                                <div className="reveal-from-left calculate-card blue-back-gradient">
                                     <img src="https://res.cloudinary.com/dn07sxmaf/image/upload/v1709710094/koinx/Rectangle_11947_sowesn.png" alt="" />
                                     <div className="content-and-button-div">
                                         <p className="title no-margin">Calculate Your Profits</p>
@@ -376,7 +390,7 @@ const Home = () => {
                                     </div>
                                 </div>
 
-                                <div className="calculate-card red-back-gradient">
+                                <div className="reveal-from-right calculate-card red-back-gradient">
                                     <img src="https://res.cloudinary.com/dn07sxmaf/image/upload/v1709710094/koinx/Rectangle_11947_sowesn.png" alt="" />
                                     <div className="content-and-button-div">
                                         <p className="title no-margin">Calculate Your Tax Liability</p>
@@ -413,7 +427,7 @@ const Home = () => {
                             Lorem ipsum dolor sit amet consectetur. Cras aliquet tristique ornare vestibulum nunc dignissim vel consequat. Leo etiam nascetur bibendum amet enim sit eget leo amet. At metus orci augue fusce eleifend lectus eu fusce adipiscing. Volutpat ultrices nibh sodales massa habitasse urna felis augue. Gravida aliquam fermentum augue eu. Imperdiet bibendum amet aliquam donec. Eget justo dui metus odio rutrum. Vel ipsum eget in at curabitur sem posuere facilisis vitae. Sed lorem sit mauris id eget arcu ut. Vulputate ipsum aliquet odio nisi eu ac risus.
                         </p>
 
-                        <div className="team-card">
+                        <div className="reveal-from-right team-card">
                             <div className="team-member-photo-and-role">
                                 <img src="https://res.cloudinary.com/dn07sxmaf/image/upload/v1709731796/koinx/sandeep_d45q0v.png" alt="" />
                                 <p className="role title-med color-black no-margin mg-up-1rem">John Smith</p>
@@ -424,7 +438,7 @@ const Home = () => {
                             </div>
                         </div>
 
-                        <div className="team-card">
+                        <div className="reveal-from-right team-card">
                             <div className="team-member-photo-and-role">
                                 <img src="https://res.cloudinary.com/dn07sxmaf/image/upload/v1709731796/koinx/sandeep_1_cygcch.png" alt="" />
                                 <p className="role title-med color-black no-margin mg-up-1rem">John Smith</p>
@@ -435,7 +449,7 @@ const Home = () => {
                             </div>
                         </div>
 
-                        <div className="team-card">
+                        <div className="reveal-from-right team-card">
                             <div className="team-member-photo-and-role">
                                 <img src="https://res.cloudinary.com/dn07sxmaf/image/upload/v1709731795/koinx/sandeep_2_dzxm3h.png" alt="" />
                                 <p className="role title-med color-black no-margin mg-up-1rem">John Smith</p>
@@ -524,7 +538,7 @@ const Home = () => {
                         <div className="trending-list">
                             {coins.slice(0, 3).map((coin) => (
                                 <div className="list">
-                                    <div className="trending-list-small-flex">
+                                    <div className="reveal-from-right trending-list-small-flex">
                                         <img src={coin.item.thumb} alt="" className="sm-logo-coin" />
                                         <p className="title-coin">{coin.item.name}</p>
                                     </div>
